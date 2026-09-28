@@ -42,3 +42,5 @@ Go remains appropriate for service and network control. Changing language does n
 Run Go tests with the race detector and vet, native module build/load checks, and synthetic FFmpeg integration tests. Hardware tests are separate: begin muted at 1%, verify volume, and never exceed 5%. Users retain the full configurable receiver range.
 
 Acoustic latency measurement should compare source and receiver output on a common clock where possible, reporting median, p95, drift and uncertainty. Cast PLAYING status, network RTT and encoding queue lengths cannot establish audible end-to-end latency.
+
+The standalone Qt settings window and KDE module share one panel. KDE integration is optional at build and package installation time; GNOME and Omarchy session validation remains pending.

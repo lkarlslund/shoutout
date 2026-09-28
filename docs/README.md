@@ -2,11 +2,11 @@
 
 **Use your Google Audio compatible speakers for system audio**
 
-ShoutOut turns a Google Cast speaker into a Linux audio output. Select it in KDE’s audio menu and send sound from your games, browser, music player—or your whole desktop.
+ShoutOut turns a Google Cast speaker into a Linux audio output. Select it in your desktop’s audio menu and send sound from your games, browser, music player—or your whole desktop.
 
 ![ShoutOut settings in KDE](shoutout.png)
 
-- **Feels native.** A dedicated System Settings page, with KDE’s familiar volume and mute controls.
+- **Feels native.** A native settings window, optional KDE System Settings integration, and your desktop’s volume and mute controls.
 - **Speakers appear automatically.** Live discovery keeps your destination list up to date.
 - **Choose your balance.** Low latency, Balanced and High quality presets, plus custom controls.
 - **Tame sensitive speakers.** Adjustable volume scaling, applied without interrupting playback.
@@ -21,7 +21,7 @@ Receiver targets are buffer settings, not total audible latency. Playback is tes
 
 ## Get started
 
-For **KDE Plasma 6 + PipeWire**. Build from source with Go, FFmpeg and the Qt6/KDE development libraries; see [requirements and installation details](GUIDE.md).
+For **Linux + PipeWire**, with Qt6 settings and optional KDE Plasma 6 integration. KDE is tested; GNOME and Omarchy sessions still need validation. Build from source with Go, FFmpeg and Qt6 development libraries; see [requirements and installation details](GUIDE.md).
 
 On Arch Linux, use the [system-wide package](ARCH.md):
 
@@ -33,14 +33,14 @@ shoutout configure
 Or install from source for your user:
 
 ```sh
-make build kde
+make build settings
 ./build/shoutout install
 shoutout configure
 ```
 
-Choose your speaker, select **ShoutOut** as your KDE audio output, and unmute. Start with a low volume scale for sensitive speakers.
+Choose your speaker, select **ShoutOut** as your audio output, and unmute. Start with a low volume scale for sensitive speakers.
 
-The settings page opens immediately through `shoutout configure`. Per-user source installs need a new login for discovery through the normal System Settings launcher. Arch packages are discoverable immediately.
+`shoutout configure` always opens the standalone window. KDE users can also use the optional System Settings page.
 
 [Usage & troubleshooting](GUIDE.md) · [Development plan](PLAN.md) · [Validation](VALIDATION.md)
 

@@ -1,5 +1,9 @@
+#ifdef SHOUTOUT_KDE_SMOKE
 #include <KCModule>
 #include <KPluginFactory>
+#else
+#include "settingspanel.h"
+#endif
 #include <QApplication>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -12,6 +16,7 @@
 #include <cstdio>
 int main(int argc, char **argv) {
   QApplication app(argc, argv);
+  #ifdef SHOUTOUT_KDE_SMOKE
   if (argc < 2)
     return 2;
   auto result = KPluginFactory::instantiatePlugin<KCModule>(
@@ -22,6 +27,10 @@ int main(int argc, char **argv) {
   }
   auto module = result.plugin;
   auto w = module->widget();
+  #else
+  auto module = new SettingsPanel;
+  auto w = module;
+  #endif
   w->resize(780, 660);
   w->show();
   module->load();
@@ -97,7 +106,7 @@ int main(int argc, char **argv) {
       return;
     }
     scale->setValue(previous);
-    printf("Native KDE module loaded; full 0–100%% scale; %d destination "
+    printf("Native settings loaded; full 0–100%% scale; %d destination "
            "entries; status available.\n",
            devices->count());
     if (argc > 2)

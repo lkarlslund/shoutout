@@ -28,3 +28,12 @@ jobs:
           path: |
             build/shoutout-linux-*
             licenses/
+
+  native-settings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y qt6-base-dev ninja-build
+      - run: cmake -S kde -B build/settings -G Ninja -DSHOUTOUT_KDE=OFF
+      - run: cmake --build build/settings
+      - run: ctest --test-dir build/settings --output-on-failure

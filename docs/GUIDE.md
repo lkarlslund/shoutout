@@ -2,27 +2,29 @@
 
 ## Install
 
-For Arch Linux, the [PKGBUILD](ARCH.md) installs system-wide, including the native KDE module. The instructions below describe the alternative per-user installation.
+For Arch Linux, the [PKGBUILD](ARCH.md) installs system-wide, with optional KDE integration. The instructions below describe the alternative per-user installation.
 
-Requires a KDE Plasma 6 desktop, a systemd user session, PipeWire's PulseAudio compatibility service, `pactl`, `parec`, and FFmpeg with AAC, MP3 and `libopus` encoders. Building also requires Go (see `go.mod`), CMake, Ninja, a C++20 compiler, Qt6 Widgets and Network, and KDE Frameworks 6 KCMUtils and CoreAddons development files. Arch is the current development platform; other distributions need validation.
+Requires a systemd user session, PipeWire's PulseAudio compatibility service, `pactl`, `parec`, and FFmpeg with AAC, MP3 and `libopus` encoders. Building also requires Go (see `go.mod`), CMake, Ninja, a C++20 compiler, Qt6 Widgets and Network development files. KDE Frameworks 6 KCMUtils and CoreAddons are optional for the System Settings module. Arch is the current development platform; other distributions need validation.
 
 ```sh
-make build kde
+make build settings
 ./build/shoutout doctor
 ./build/shoutout setup --device "Your speaker name"
 ./build/shoutout install
 shoutout configure
 ```
 
-The per-user installer copies the service binary, native settings plugin, desktop launcher and Plasma environment script, then enables the systemd user service. It preserves the selected output and existing ShoutOut volume/mute. A newly created output starts muted at a default receiver scale of 1%.
+The per-user installer copies both executables and a desktop launcher, then enables the systemd user service. When the KDE module was built, it also installs the module and a Plasma environment script. It preserves existing output volume/mute; a newly created output starts muted with a 1% receiver scale.
 
-`shoutout configure` opens the ShoutOut module inside KDE System Settings immediately. The regular System Settings launcher discovers the per-user plugin after the next Plasma login. Close an already open System Settings window before using the new launcher. A system package can instead install the plugin into the standard Qt6 plugin directory; an Arch Linux PKGBUILD is included; no complete binary release is published yet. The Go-only CI artifacts do not include the native module.
+`shoutout configure` and the ShoutOut application launcher always open the standalone Qt window. KDE can additionally embed the same panel in System Settings. Per-user KDE modules are discovered after the next Plasma login; system packages are discovered after reopening System Settings.
+
+CMake builds the KDE module when its development libraries are available. To explicitly build only standalone settings, use `make build settings CMAKE_FLAGS=-DSHOUTOUT_KDE=OFF`. GNOME and Omarchy use the standalone window and their normal audio output controls; these desktop sessions have not yet been tested. Qt may use different styling from GTK applications. Go-only CI artifacts do not include the required settings executable.
 
 ## Use
 
-Choose a detected receiver or enter `address:port` (for example `192.168.1.10:8009`). The service discovers receivers continuously from startup and pushes live changes to the settings dropdown. Devices disappear after 45 seconds without refreshed discovery records, or earlier when they announce departure. Your selected destination is retained if it becomes unavailable. One destination is supported at a time; advertised speaker groups can be selected but have not been validated. Select ShoutOut in KDE's audio selector, unmute it and route your applications normally.
+Choose a detected receiver or enter `address:port` (for example `192.168.1.10:8009`). The service discovers receivers continuously from startup and pushes live changes to the settings dropdown. Devices disappear after 45 seconds without refreshed discovery records, or earlier when they announce departure. Your selected destination is retained if it becomes unavailable. One destination is supported at a time; advertised speaker groups can be selected but have not been validated. Select ShoutOut in your desktop's audio selector, unmute it and route your applications normally.
 
-- KDE's normal output slider and mute are authoritative. Internal capture is marked virtual so it does not appear as an application in KDE's mixer.
+- Your desktop's normal output slider and mute are authoritative. Internal capture is marked virtual so it does not appear as an application in KDE's mixer.
 - Receiver volume scale is configurable from **0–100%**. Keep it low for sensitive speakers. The 5% maximum applies only to development speaker tests.
 - Native volume changes apply to captured audio, so their audible effect includes stream delay. Native mute also sends a receiver mute command without restarting playback.
 - Encoding choices are **Cast Streaming / Opus (experimental)** and AAC live segments. Existing MP3 configurations remain supported as a legacy option. Cast Streaming sends encrypted, paced Opus frames (5 ms below a 40 ms target, 10 ms below 80 ms, otherwise 20 ms) over UDP, with receiver feedback and bounded retransmission. Its target-delay control accepts 10–1000 ms; the Balanced target is 100 ms. This is a requested receiver buffer, not measured end-to-end latency. Select AAC manually if the receiver does not support this mode.

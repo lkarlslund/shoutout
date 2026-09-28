@@ -137,3 +137,21 @@ claim. Desktop capture scheduling under load still needs real-world evaluation.
 Automated tests exercise encrypted 5, 10 and 20 ms frames and matching RTP
 timestamps. A regression test supplies only 15 ms of PCM and requires output
 without closing the input. Race tests, vet and native KDE build pass.
+
+
+## Standalone settings and optional desktop integration
+
+`shoutout configure` now starts the companion `shoutout-settings` executable.
+The standalone Qt window and optional KDE System Settings module embed the same
+panel, with live discovery, presets, volume scaling, status and validation.
+Apply, Reset, Restore Defaults and unsaved-change confirmation are available in
+the standalone window. Qt-only builds do not require or link KDE frameworks.
+The Arch core package includes both executables; a separate KDE package installs
+the System Settings module. The package installer selects the KDE integration
+when the calling desktop identifies itself as KDE.
+
+Isolated Qt tests cover loading, preset selection, failed and successful Apply,
+address validation, defaults and reset with a fake backend. Native smoke checks
+exercise both hosts with the running service without applying changes. The
+Qt-only build and Go race/vet checks pass. GNOME and Omarchy sessions are not yet
+hardware-tested. No speaker playback changes are required to test this UI.

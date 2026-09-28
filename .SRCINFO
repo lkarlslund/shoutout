@@ -1,5 +1,5 @@
 pkgbase = shoutout-git
-	pkgdesc = Use your Google Audio compatible speakers for system audio, with native KDE settings
+	pkgdesc = Use your Google Audio compatible speakers for system audio, with native desktop settings
 	pkgver = 0.1.0.r33.g7a4bcfa
 	pkgrel = 1
 	url = https://github.com/lkarlslund/shoutout
@@ -10,14 +10,13 @@ pkgbase = shoutout-git
 	makedepends = go>=2:1.26
 	makedepends = cmake
 	makedepends = ninja
+	makedepends = kcmutils
+	makedepends = kcoreaddons
 	depends = ffmpeg
 	depends = libpulse
 	depends = pipewire-pulse
 	depends = qt6-base
-	depends = kcmutils
-	depends = kcoreaddons
-	depends = systemsettings
-	depends = plasma-pa
+	depends = libglvnd
 	depends = systemd
 	depends = glibc
 	depends = libgcc
@@ -28,3 +27,19 @@ pkgbase = shoutout-git
 	sha256sums = SKIP
 
 pkgname = shoutout-git
+	optdepends = shoutout-kde-git: KDE System Settings integration
+
+pkgname = shoutout-kde-git
+	pkgdesc = ShoutOut integration for KDE System Settings
+	install = 
+	depends = shoutout-git=0.1.0.r33.g7a4bcfa
+	depends = kcmutils
+	depends = kcoreaddons
+	depends = qt6-base
+	depends = systemsettings
+	depends = libglvnd
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	provides = shoutout-kde
+	conflicts = shoutout-kde

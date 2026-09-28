@@ -51,14 +51,14 @@ Commands:
   run                     Run the audio output and local settings service
   install                 Install and start a systemd user service
   uninstall               Remove installed service, binary and desktop entry
-  configure               Open the native KDE settings module
+  configure               Open the standalone native settings window
   status                  Print the running service status
   config                  Print the current configuration
   apply                   Apply JSON configuration read from stdin
   doctor                  Check runtime prerequisites
   version                 Print build version
 
-Use KDE audio controls for volume and mute.`)
+Use your desktop’s audio controls for volume and mute.`)
 		return nil
 	case "version":
 		fmt.Println(version)
@@ -117,18 +117,16 @@ Use KDE audio controls for volume and mute.`)
 	case "run":
 		return daemon(path)
 	case "configure":
-		home, err := os.UserHomeDir()
+		self, err := os.Executable()
 		if err != nil {
 			return err
 		}
-		plugin := filepath.Join(home, ".local", "lib", "qt6", "plugins", "plasma", "kcms", "systemsettings_qwidgets", "kcm_shoutout.so")
-		cmd := exec.Command("systemsettings", "kcm_shoutout")
-		// Packaged plugins use Qt's system search path. Extend it only for
-		// installations in the user's home directory.
-		if _, err = os.Stat(plugin); err == nil {
-			cmd.Env = append(os.Environ(), "QT_PLUGIN_PATH="+pluginSearchPath(home))
+		cmd := exec.Command(filepath.Join(filepath.Dir(self), "shoutout-settings"), "--backend", self)
+		cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("open ShoutOut settings (install the matching shoutout-settings executable): %w", err)
 		}
-		return cmd.Run()
+		return nil
 	case "status", "config":
 		r, err := control.Call(control.Request{Method: "status"})
 		if err != nil {
@@ -265,7 +263,7 @@ func install(remove bool) error {
 		if err = audio.RemoveSink(context.Background()); err != nil {
 			return err
 		}
-		for _, p := range []string{unitPath, desktopPath, binaryPath, environmentPath, filepath.Join(home, ".local", "lib", "qt6", "plugins", "plasma", "kcms", "systemsettings_qwidgets", "kcm_shoutout.so")} {
+		for _, p := range []string{unitPath, desktopPath, binaryPath, filepath.Join(home, ".local", "bin", "shoutout-settings"), environmentPath, filepath.Join(home, ".local", "lib", "qt6", "plugins", "plasma", "kcms", "systemsettings_qwidgets", "kcm_shoutout.so")} {
 			if err = os.Remove(p); err != nil && !errors.Is(err, os.ErrNotExist) {
 				return err
 			}
@@ -282,6 +280,10 @@ func install(remove bool) error {
 	self, err := os.Executable()
 	if err != nil {
 		return err
+	}
+	settingsData, err := os.ReadFile(filepath.Join(filepath.Dir(self), "shoutout-settings"))
+	if err != nil {
+		return fmt.Errorf("read standalone settings executable; build settings before installing: %w", err)
 	}
 	b, err := os.ReadFile(self)
 	if err != nil {
@@ -311,6 +313,9 @@ func install(remove bool) error {
 	if err = os.Rename(temp.Name(), binaryPath); err != nil {
 		return err
 	}
+	if err = replaceFile(filepath.Join(filepath.Dir(binaryPath), "shoutout-settings"), settingsData, 0755); err != nil {
+		return err
+	}
 	// Install the native module beside the per-user Qt plugin tree when supplied.
 	moduleSource := filepath.Join(filepath.Dir(self), "kcm_shoutout.so")
 	if moduleData, readErr := os.ReadFile(moduleSource); readErr == nil {
@@ -321,15 +326,15 @@ func install(remove bool) error {
 		if err = replaceFile(moduleDest, moduleData, 0755); err != nil {
 			return err
 		}
-	}
-	// Plasma sources this on login so its standard Settings launcher finds the module.
-	if err = os.MkdirAll(filepath.Dir(environmentPath), 0755); err != nil {
-		return err
-	}
-	pluginRoot := filepath.Join(home, ".local", "lib", "qt6", "plugins")
-	quotedRoot := "'" + strings.ReplaceAll(pluginRoot, "'", "'\"'\"'") + "'"
-	if err = os.WriteFile(environmentPath, []byte("export QT_PLUGIN_PATH="+quotedRoot+"${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}\n"), 0644); err != nil {
-		return err
+		// Plasma sources this on login so its standard Settings launcher finds the module.
+		if err = os.MkdirAll(filepath.Dir(environmentPath), 0755); err != nil {
+			return err
+		}
+		pluginRoot := filepath.Join(home, ".local", "lib", "qt6", "plugins")
+		quotedRoot := "'" + strings.ReplaceAll(pluginRoot, "'", "'\"'\"'") + "'"
+		if err = os.WriteFile(environmentPath, []byte("export QT_PLUGIN_PATH="+quotedRoot+"${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}\n"), 0644); err != nil {
+			return err
+		}
 	}
 	// systemd interprets percent specifiers even in quoted command arguments.
 	escaped := strconv.Quote(strings.ReplaceAll(binaryPath, "%", "%%"))
@@ -349,16 +354,8 @@ func install(remove bool) error {
 			return err
 		}
 	}
-	fmt.Println("Installed and started. Use KDE Audio for volume/mute and ShoutOut native settings for destination and presets.")
+	fmt.Println("Installed and started. Use your desktop’s audio controls for volume/mute and ShoutOut native settings for destination and presets.")
 	return nil
-}
-
-func pluginSearchPath(home string) string {
-	root := filepath.Join(home, ".local", "lib", "qt6", "plugins")
-	if existing := os.Getenv("QT_PLUGIN_PATH"); existing != "" {
-		return root + ":" + existing
-	}
-	return root
 }
 
 func replaceFile(path string, data []byte, mode os.FileMode) error {
