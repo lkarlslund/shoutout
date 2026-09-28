@@ -192,7 +192,7 @@ func daemon(path string) error {
 	defer func() { cancel(); <-discoveryDone }()
 	done := make(chan error, 1)
 	go func() { done <- control.Run(ctx, s, listener); cancel() }()
-	slog.Info("native KDE control ready")
+	slog.Info("native settings control ready")
 	err = s.Run(ctx)
 	cancel()
 	controlErr := <-done

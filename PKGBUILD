@@ -1,7 +1,7 @@
 # Maintainer: Lars Karlslund
 pkgbase=shoutout-git
 pkgname=('shoutout-git' 'shoutout-kde-git')
-pkgver=0.1.0.r33.g7a4bcfa
+pkgver=0.1.0.r35.g2c0480f
 pkgrel=1
 pkgdesc='Use your Google Audio compatible speakers for system audio, with native desktop settings'
 arch=('x86_64')

@@ -1,4 +1,4 @@
-// Package control provides user-private local IPC for KDE settings and the CLI.
+// Package control provides user-private local IPC for native settings and the CLI.
 package control
 
 import (
